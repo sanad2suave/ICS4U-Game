@@ -85,7 +85,9 @@ class TextDisplay:
         self.messages = messages
         self.current_message_index = 0
         self.current_message = ''
-        self.show_continue_text = True  
+        self.show_continue_text = True
+        self.last_click_time = 0  # Variable to store the time of the last click
+        self.click_delay = 1.0  # Set the desired delay in seconds
         
 
     def update(self):
@@ -111,9 +113,12 @@ class TextDisplay:
             return button_rect  
 
     def next_message(self):
-        self.current_message_index = (self.current_message_index + 1) % len(self.messages)
-        self.update()
-        self.show_continue_text = True  
+        current_time = pygame.time.get_ticks() / 1000.0  # Get current time in seconds
+        if current_time - self.last_click_time >= self.click_delay:
+            self.current_message_index = (self.current_message_index + 1) % len(self.messages)
+            self.update()
+            self.show_continue_text = True
+            self.last_click_time = current_time
 
     def handle_event(self, event, rect):
         if event and event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
