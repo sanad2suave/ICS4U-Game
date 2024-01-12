@@ -1,1 +1,0 @@
-# NRGHacks-Project
