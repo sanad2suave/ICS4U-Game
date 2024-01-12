@@ -313,6 +313,7 @@ def draw_new_game(saved_state=None, event=None):
     floor2_button = FloorsButton('Next Floor', (WIDTH - 260, 70))
     floor3_button = FloorsButton('Next Floor', (WIDTH - 260, 70))
     floor4_button = FloorsButton('Next Floor', (WIDTH - 260, 70))
+    floor5_button = FloorsButton('Next Floor', (WIDTH - 260, 70))
 
     # Initialize game state
     if saved_state is None:
@@ -339,7 +340,7 @@ def draw_new_game(saved_state=None, event=None):
     floor_2 = game_state['floor_2']
     floor_3 = game_state['floor_3']
     floor_4 = game_state['floor_4']
-    # floor_5 = game_state['floor_5']
+    floor_5 = game_state['floor_5']
     # floor_6 = game_state['floor_6']
     # floor_7 = game_state['floor_7']
 
@@ -538,8 +539,7 @@ def draw_new_game(saved_state=None, event=None):
                     if button_rect:
                         text_display.handle_event(event, rect_for_text_display)
 
-                    
-
+                
 
                 if mc_x < current_frame_soldier.get_width() - 380:
                     mc_animation_walk_left_screen = True
@@ -617,7 +617,7 @@ def draw_new_game(saved_state=None, event=None):
                                 floor_4 = True
                             if floor_4:
                                 floor_2_background.draw()
-                                floor4_button.draw()
+                                #floor4_button.draw()
 
                                 current_frame_detective = pygame.transform.scale(detective.get_current_frame(), (80, 140))
                                 screen.blit(current_frame_detective, (detective.x, HEIGHT - current_frame_detective.get_height() - 67))
@@ -643,7 +643,39 @@ def draw_new_game(saved_state=None, event=None):
                                     button_rect_andrea = andrea_display.draw(rect_for_andrea_display)
 
                                     if button_rect_andrea:
-                                        andrea_display.handle_event(event, rect_for_andrea_display)                   
+                                        andrea_display.handle_event(event, rect_for_andrea_display)
+
+                                if  mc_x > current_frame_soldier.get_width() + 200:
+                                    floor_5 = True
+                                if floor_5:
+                                    floor_2_background.draw()
+                                    floor5_button.draw()
+
+                                    current_frame_marcus = pygame.transform.scale(marcus.get_current_frame(), (80, 140))
+                                    screen.blit(current_frame_marcus, (marcus.x, HEIGHT - current_frame_marcus.get_height() - 67))
+                                    
+                                    current_frame_barry = pygame.transform.flip(barry.get_current_frame(), True, False)
+                                    current_frame_barry = pygame.transform.scale(current_frame_barry, (70, 150))
+                                    screen.blit(current_frame_barry, (barry.x, HEIGHT - current_frame_barry.get_height() - 67))
+                                    
+                                    screen.blit(current_frame_soldier, (mc_x - 250, HEIGHT - current_frame_soldier.get_height() - 65))
+
+                                    distance_to_marcus = abs(mc_x - (marcus.x + 160))
+                                    distance_to_barry = abs(mc_x -(barry.x + 100))
+
+                                    if distance_to_marcus < 100:
+                                        rect_for_marcus_display = pygame.Rect(20, HEIGHT - 100, WIDTH - 40, 80) 
+                                        button_rect_marcus = marcus_display.draw(rect_for_marcus_display)   
+
+                                        if button_rect_marcus:
+                                            marcus_display.handle_event(event, rect_for_marcus_display)
+                                    
+                                    elif distance_to_barry < 30:
+                                        rect_for_barry_display = pygame.Rect(20, HEIGHT - 100, WIDTH - 40, 80)
+                                        button_rect_barry = barry_display.draw(rect_for_barry_display)
+
+                                        if button_rect_barry:
+                                            barry_display.handle_event(event, rect_for_barry_display)                   
 
             car_animation.update()
             current_frame = car_animation.get_current_frame()
@@ -687,7 +719,7 @@ def draw_new_game(saved_state=None, event=None):
                         game_state['floor_2'] = floor_2
                         game_state['floor_3'] = floor_3
                         game_state['floor_4'] = floor_4
-                        # game_state['floor_5'] = floor_5
+                        game_state['floor_5'] = floor_5
                         # game_state['floor_6'] = floor_6
                         # game_state['floor_7'] = floor_7
                         game_state['car_x'] = car_animation.x
