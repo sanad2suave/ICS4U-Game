@@ -12,7 +12,7 @@ def count_frames(spritesheet_path, frame_width, frame_height):
     return total_frames
 
 # Example usage:
-spritesheet_path = './ICS4U-Project/Source/Characters/Pros.png'
+spritesheet_path = './ICS4U-Project/Source/Characters/Soldier2_dead.png'
 frame_width = 128
 frame_height = 128
 
