@@ -75,8 +75,7 @@ class SpriteAnimation:
             self.current_frame_index = (self.current_frame_index + 1) % self.num_frames
             self.animation_timer = current_time
 
-            # Update the x-coordinate to make the sprite move from left to right
-            self.x += 6  # You can adjust the speed as needed
+            self.x += 6  
 
     def get_current_frame(self):
         return self.frames[self.current_frame_index]
@@ -86,11 +85,12 @@ class TextDisplay:
         self.messages = messages
         self.current_message_index = 0
         self.current_message = ''
-        self.show_continue_text = True  # Add a flag to control when to show the "Click to Continue" text
+        self.show_continue_text = True
+        self.last_click_time = 0  # Variable to store the time of the last click
+        self.click_delay = 1.0  # Set the desired delay in seconds
         
 
     def update(self):
-        # Display the entire message without scrolling
         self.current_message = self.messages[self.current_message_index]
 
     def draw(self, rect):
@@ -100,28 +100,29 @@ class TextDisplay:
 
         for i, line in enumerate(text_lines):
             text_surface = dialogue_font.render(line, True, 'white')
-            # Adjusted to start at the top-left corner of the black rect
             text_rect = text_surface.get_rect(topleft=(rect.left + 10, rect.top + 10 + i * dialogue_font.get_linesize()))
             screen.blit(text_surface, text_rect.topleft)
 
         if self.show_continue_text:
-            # Adding a clickable "Click" button with centered text
             button_rect = pygame.Rect(rect.right - 75, rect.bottom - 30, 60, 20)
             pygame.draw.rect(screen, 'white', button_rect)
             button_text = dialogue_font.render('Click', True, 'black')
             text_rect = button_text.get_rect(center=button_rect.center)
             screen.blit(button_text, text_rect.topleft)
 
-            return button_rect  # Return the button rectangle for click detection
+            return button_rect  
 
     def next_message(self):
-        self.current_message_index = (self.current_message_index + 1) % len(self.messages)
-        self.update()
-        self.show_continue_text = True  # Reset the flag when showing the next message
+        current_time = pygame.time.get_ticks() / 1000.0  # Get current time in seconds
+        if current_time - self.last_click_time >= self.click_delay:
+            self.current_message_index = (self.current_message_index + 1) % len(self.messages)
+            self.update()
+            self.show_continue_text = True
+            self.last_click_time = current_time
 
     def handle_event(self, event, rect):
         if event and event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-            if rect.collidepoint(event.pos):  # Check if the mouse click is within the rectangle
+            if rect.collidepoint(event.pos):  
                 self.next_message()
 
 
@@ -195,7 +196,6 @@ def load_game():
             state = json.load(file)
             return state
     except FileNotFoundError:
-        # Handle the case where the file doesn't exist (no saved game)
         return None
 
 class SaveButton(Button):
@@ -234,20 +234,19 @@ def draw_menu():
         loaded_state = load_game()
         if loaded_state is not None:
             print("Loaded Game!")
-            # Implement loading game state logic here
             if 'screen' in loaded_state:
                 if loaded_state['screen'] == 'new_game':
-                    draw_new_game(loaded_state)  # Pass loaded state to the new game function
-                    return True  # Return True to continue the game
+                    draw_new_game(loaded_state)  
+                    return True 
 
         else:
             print("No saved game found!")
     elif clicked_button == 'Settings':
         print("Settings button clicked! Perform Settings action.")
-        # Add your code for the "Settings" action here
+        
     elif clicked_button == 'Credits':
         print("Credits button clicked! Perform Credits action.")
-        # Add your code for the "Credits" action here
+       
     elif clicked_button == 'New Game':
         print("New Game button clicked! Perform New Game action.")
         draw_new_game()
@@ -280,6 +279,30 @@ def draw_new_game(saved_state=None, event=None):
     chad = SpriteAnimation('./ICS4U-Project/Source/Characters/Chad.png', (24,48), 4, 100)
     chad.x = 25
 
+    # load Timmothy sprite
+    timmothy = SpriteAnimation('./ICS4U-Project/Source/Characters/Timothy.png', (24,48), 4, 100)
+    timmothy.x = 350
+
+    # load detective sprite
+    detective = SpriteAnimation('./ICS4U-Project/Source/Characters/Detective.png', (24,48), 4, 100)
+    detective.x = 25
+
+    # load andrea sprite
+    andrea = SpriteAnimation('./ICS4U-Project/Source/Characters/Andrea.png', (24,48), 4, 100)
+    andrea.x = 420
+
+    # load barry sprite
+    barry = SpriteAnimation('./ICS4U-Project/Source/Characters/Barry.png', (24,48), 4, 100)
+    barry.x = 370
+
+    # load marcus sprite
+    marcus = SpriteAnimation('./ICS4U-Project/Source/Characters/Marcus.png', (24,48), 4, 100)
+    marcus.x = 25
+
+    # load the one who knows sprite
+    the_one_who_knows = SpriteAnimation('./ICS4U-Project/Source/Characters/The_one_who_knows.png', (24,48), 4, 100)
+    the_one_who_knows.x = 25
+
     # Adjust speed and size for the soldier character
     mc_speed = 3  # Adjust the speed as needed
     mc_animation_walk = SpriteAnimation('./ICS4U-Project/Source/Characters/Soldier2_walk.png', (128, 128), 8, 100)
@@ -293,16 +316,19 @@ def draw_new_game(saved_state=None, event=None):
     outside_lobby_background = ImageScreen('./ICS4U-Project/Source/sprite_background/Outside_lobby.png', WIDTH, HEIGHT)
     floor_2_background = ImageScreen('./ICS4U-Project/Source/sprite_background/Room.png', WIDTH, HEIGHT)
     floor_3_background = ImageScreen('./ICS4U-Project/Source/sprite_background/Room.png', WIDTH, HEIGHT)
+    floor_7_background = ImageScreen('./ICS4U-Project/Source/sprite_background/Floor7.png', WIDTH, HEIGHT)
     save_button = SaveButton('Save', (WIDTH - 260, 20))  # Move Save button to the top right corner
     floor1_button = FloorsButton('Next Floor', (WIDTH - 260, 70))
     floor2_button = FloorsButton('Next Floor', (WIDTH - 260, 70))
     floor3_button = FloorsButton('Next Floor', (WIDTH - 260, 70))
     floor4_button = FloorsButton('Next Floor', (WIDTH - 260, 70))
+    floor5_button = FloorsButton('Next Floor', (WIDTH - 260, 70))
+    floor6_button = FloorsButton('Next Floor', (WIDTH - 260, 70))
 
     # Initialize game state
     if saved_state is None:
         game_state = {
-            'screen': 'new_game',  # Replace with the current screen or game state identifier
+            'screen': 'new_game',  
             'scrolling_phase': True,  # Initial scrolling phase
             'car_left_screen': False,  # Initial car left screen state
             'mc_animation_walk_left_screen': False, # Initial mc_animation_walk left screen state
@@ -313,7 +339,7 @@ def draw_new_game(saved_state=None, event=None):
             'floor_6': False,
             'floor_7': False
 
-            # Add any other relevant information to save
+            
         }
     else:
         game_state = saved_state
@@ -324,8 +350,8 @@ def draw_new_game(saved_state=None, event=None):
     floor_2 = game_state['floor_2']
     floor_3 = game_state['floor_3']
     floor_4 = game_state['floor_4']
-    # floor_5 = game_state['floor_5']
-    # floor_6 = game_state['floor_6']
+    floor_5 = game_state['floor_5']
+    floor_6 = game_state['floor_6']
     # floor_7 = game_state['floor_7']
 
     # Set initial positions for car and mc_animation_walk based on saved state
@@ -375,13 +401,104 @@ def draw_new_game(saved_state=None, event=None):
                                 'Todd: And you never seen him since?',
                                 'Lucy: I wish. Anyways are we gonna...',
                                 'Todd: No.',
-                                'Lucy: Alright mista.. I see how it is. Cant even have a little \nfun round these parts. You and that gun of yours. At least youll \nhandle yourself with that big dog.'])
+                                'Lucy: Alright mista.. I see how it is. Cant even have a little \nfun round these parts. You and that gun of yours. At least youll \nhandle yourself with that big dog. Wait, one more thing',
+                                'Lucy: The elavator is busted for the next floor, I suggest you \ntake the stairs mista. Keep walking to the right.'])
     lucy_display.update()
     button_rect_lucy = None
-    chad_display = TextDisplay(['H', 'o'])
+    chad_display = TextDisplay(['Chad: Lemme guess, M16? With a switch? Not to mention the \nXTEN grip. And a VX Pineapple for yo underbarrel.',
+                                'Chad: Oh, and of course cant forget an extended round mag \nthat would send your enemies back to the stone age.',
+                                'Todd: Yeah thats exactly it. How do-',
+                                'Chad: I know all this? I used to serve as a marine. Did three \ntours abroad. I know a thing or two.',
+                                'Todd: Now what is a former marine doing here in this dump?',
+                                'Chad: They diagnosed me with PTSD and a bunch of other \nnonsense I couldnt get a job. I went from place to place, \neventually I became broke. Had to sleep in the streets. \nEnded up in the sewers at one point too.',
+                                'Chad: Then I got approached by someone. Told me he can give \nme a home that body else would. I asked him whats the catch. \nHe saidthere wasnt one. Simply doing it \nout of kindness',
+                                'Chad: I sholdve known...it was way too good to be true',
+                                'Todd: What do you mean?',
+                                'Chad: Im guessing you already met lucy? And the man out \nfront? Did they look like outstanding citizens? Ill answer that \nfor you. Ones a whore and the other is a drug adict.',
+                                'Chad: They placed us here. The ones that no one wants',
+                                'Todd: Why?',
+                                'Chad: Theres something here. Youre going to need a lot more \nthan a gun. It doesnt roam around these floors..rather the 7th \nfloor of this building. The last and final floor.',
+                                'Todd: How long have you been here?',
+                                'Chad: A month. I dont know why the hell youre here. Because \nonce youre in, theres no going out. Hell, getting in this place\n is hard howd you do it.',
+                                'Todd: What do you mean? I just walked through the main floor \nand kindly asked the lady at the front where my brother is.',
+                                'Chad: She just let you in here? That makes sense why there \nwas no alarm. You doomed yourself. They would never let \nanyone in unless...',
+                                'Todd: Unless what? ...Unless What??? What now you have a \nmute button all of a sudden?'])
     chad_display.update()
     button_rect_chad = None
-
+    timmothy_display = TextDisplay(['Timmothy: The man in green, Stop!',
+                                    'Todd: What.',
+                                    'Timmothy: Youre not heading upstairs are you?',
+                                    'Todd: Why might you ask?',
+                                    'Timmothy: Because its my turn next!',
+                                    'Todd: The guy behind me didnt seem to have a problem.',
+                                    'Timmothy: Well I do. I wanna go upstairs. Hell, where \ndid you even come from mister? Dont you know how this \nthing works?',
+                                    'Todd: No. Elaborate.',
+                                    'Timmothy: Overtime each person gets moved by a floor \nto get access to all the amenities provided by the owner \nof this building. And you are sure as hell stopping me \nfrom said amenities of this building.',
+                                    'Todd: Can you see whats in my hand? If you dont let \nme through ill make sure you never see these damn amenities \nyoure asking for you fool! Now move over or Ill paint \nyour beard red.'])
+    timmothy_display.update()
+    button_rect_timmothy = None
+    andrea_display = TextDisplay(['Andrea: WASSSUUPP NEIGHBOUR! Did they bump you up to \nthis floor?',
+                                  'Todd: Yeah they did, I cant wait for all the "Ameneties"',
+                                  'Andrea: AMEN to that my friend.',
+                                  'Todd: I aint your friend. What are these amenities specifically?',
+                                  'Andrea: Its what were all after',
+                                  'Todd: And whats that?',
+                                  'Andrea: You seriously dont know? Money, they said. \nTheyll give us $10000 just to stay in this condo',
+                                  'Todd: What were you doing before you came here?',
+                                  'Andrea: I wasnt really doing anything, and no one \nreally wanted me, they said I was having delusions or \nwhatever.',
+                                  'Todd: Who said that?',
+                                  'Andrea: The doctors. I had to leave that place. Bunch of \nweirdos. Luckily he found me and now Im here',
+                                  'Todd: Who found you?',
+                                  'Andrea: The one who knows. Thats what they call him',
+                                  'Todd: What does he know?',
+                                  'Andrea: Couldnt tell ya. I dont even know myself.'])
+    andrea_display.update()
+    button_rect_andrea = None
+    detective_display = TextDisplay(['Detective: I didnt call for reinforcements.',
+                                     'Todd: What?',
+                                     'Detective; God damn.. I blew my cover. I was undercover I just \nassumed they called someone to pull me out.',
+                                     'Todd: Why are you here?',
+                                     'Detective: Im assuming the same reason as you.',
+                                     'Todd: And what could that reason be detective?',
+                                     'Detective: Missing cases, dead bodies, you know.. the usual.',
+                                     'Todd: Something is going on here thats for sure.',
+                                     'Detective: Yeah a body was found in the most horrid conditions \nby the bay. Video surveillance points it back to this \nbuilding right now. And Im going to get to the \nbottom of this.',
+                                     'Detective: Hell, the guy you just talked to... hes an escapee \nfrom the kennedy institution of mental health.',
+                                     'Todd: He said that the doctors concluded he was delusional',
+                                     'Detective: Delusional is an understatement. He for real \nstabbed a doctor and left.',
+                                     'Todd: Do you know where my brother is? Jason Morgan?',
+                                     "Detective: What does he look like? I dont do names.",
+                                     'Todd: Blonde and brutish. Kinda looks like he wants to kill \nyou.',
+                                     'Detective: As a matter of fact, yes. He looked worried, its as if \nhe was here to do something. I guess something spooked him.'])
+    detective_display.update()
+    button_rect_detective = None
+    barry_display = TextDisplay(['Todd: Whats up with you man?',
+                                 'Barry: ...',
+                                 'Todd: Are you good? Can you speak? Hello?',
+                                 'Barry: ...',
+                                 'Todd: Just gonna stare? Alright whatever man take care of \nyourself.',])
+    barry_display.update()
+    button_rect_barry = None
+    marcus_display = TextDisplay(['Marcus: Me Breden.. He cant hear yah myan',
+                                  'Todd: Why? What happened?',
+                                  'Marcus: Mr. Barry dont talk. Me a dont know what gwan. Alls I \nknow is two bad man in uniform like you picked him and take \nhim somwhere mean. Me a heard screams go on and \non until me dont here nothin no mo.',
+                                  'Todd: Who were these people?',
+                                  'Marcus: Let me tell ya me breden. He was a real strong man, a \nreal general. Big man can throw your ting across de room. Dey \nmade sure he couldnt pick up no godamn fork ting \nno mo. Me a think its what up der.',
+                                  'Marcus: They got him weakaned for a reason me breden. He \nlive bait myan.',
+                                  'Todd: What about you?',
+                                  'Marcus: Me just here gwaning enjoying the days left of meh \nlife myan.',
+                                  'Todd: You understand whats going on here dont you?',
+                                  'Marcus: Sadly I do me breden. Crazy ting out here',
+                                  'Todd: Youre not going to do anything about it?',
+                                  'Todd: Me breden cant you see what dem did to Mr Barry. Me a \naccept me fate blud. I know evreyting come at a price. When \ndem told me id get all me amenities ting. Me know \nder was a price and wasnt no money ting.',
+                                  'Marcus: Better den what it twas before me a been homeless \n30 years. Let me enjoy me time before it gone me breden. Go to \nthe next floor and talk to "De one who knows."'])
+    marcus_display.update()
+    button_rect_marcus = None
+    the_one_who_knows_display = TextDisplay(['Todd: Are you the one who knows?',
+                                             'The one who knows: Hmmmm.. You are a man seeking \nknowledge'])
+    the_one_who_knows_display.update()
+    button_rect_the_one_who_knows = None
+    
     while True:
         screen.fill((0, 0, 0))
 
@@ -401,7 +518,7 @@ def draw_new_game(saved_state=None, event=None):
                 distance_to_druggie = abs(mc_x - druggie.x)
 
                 keys = pygame.key.get_pressed()
-                movement_dict = {pygame.K_LEFT: -mc_speed, pygame.K_RIGHT: mc_speed}
+                movement_dict = {pygame.K_a: -mc_speed, pygame.K_d: mc_speed}
 
                 for key, speed in movement_dict.items():
                     if keys[key]:
@@ -414,13 +531,13 @@ def draw_new_game(saved_state=None, event=None):
                     #mc_animation_idle.update()
                     current_frame_soldier = pygame.transform.scale(mc_animation_idle.get_current_frame(), (220, 220))
 
-                    # Mirror the idle sprite based on the last movement direction
+                    
                     if last_movement_direction == "left":
                         current_frame_soldier = pygame.transform.flip(current_frame_soldier, True, False)
                 else:
                     current_frame_soldier = pygame.transform.scale(mc_animation_walk.get_current_frame(), (220, 220))
 
-                    # Mirror the sprite based on the last movement direction
+                    
                     if last_movement_direction == "left":
                         current_frame_soldier = pygame.transform.flip(current_frame_soldier, True, False)
 
@@ -462,7 +579,7 @@ def draw_new_game(saved_state=None, event=None):
                         floor_2 = True
                     if floor_2:
                         floor_2_background.draw()
-                        floor2_button.draw()
+                        #floor2_button.draw()
 
                         current_frame_lucy = pygame.transform.scale(lucy.get_current_frame(), (70, 130))
                         screen.blit(current_frame_lucy, (lucy.x, HEIGHT - current_frame_lucy.get_height() - 67))
@@ -487,22 +604,112 @@ def draw_new_game(saved_state=None, event=None):
                             current_frame_chad = pygame.transform.scale(chad.get_current_frame(), (80, 140))
                             screen.blit(current_frame_chad, (chad.x, HEIGHT - current_frame_chad.get_height() - 67))
 
+                            current_frame_timmothy = pygame.transform.flip(timmothy.get_current_frame(), True, False)
+                            current_frame_timmothy = pygame.transform.scale(current_frame_timmothy, (70, 150))
+                            screen.blit(current_frame_timmothy, (timmothy.x, HEIGHT - current_frame_timmothy.get_height() - 67))
+
                             screen.blit(current_frame_soldier, (mc_x, HEIGHT - current_frame_soldier.get_height() - 65))
 
-                            distance_to_chad = abs(mc_x - (chad.x - 100))    
+                            distance_to_chad = abs(mc_x - (chad.x - 100))
+                            distance_to_timmothy = abs(mc_x -(timmothy.x))    
 
-                            if distance_to_chad < 80:
+                            if distance_to_chad < 100:
                                 rect_for_chad_display = pygame.Rect(20, HEIGHT - 100, WIDTH - 40, 80) 
                                 button_rect_chad = chad_display.draw(rect_for_chad_display)   
 
                                 if button_rect_chad:
                                     chad_display.handle_event(event, rect_for_chad_display)
+                            
+                            elif distance_to_timmothy < 130:
+                                rect_for_timmothy_display = pygame.Rect(20, HEIGHT - 100, WIDTH - 40, 80)
+                                button_rect_timmothy = timmothy_display.draw(rect_for_timmothy_display)
+
+                                if button_rect_timmothy:
+                                    timmothy_display.handle_event(event, rect_for_timmothy_display)
 
                             if floor3_button.check_clicked():
                                 floor_4 = True
                             if floor_4:
                                 floor_2_background.draw()
-                                floor4_button.draw()                  
+                                #floor4_button.draw()
+
+                                current_frame_detective = pygame.transform.scale(detective.get_current_frame(), (80, 140))
+                                screen.blit(current_frame_detective, (detective.x, HEIGHT - current_frame_detective.get_height() - 67))
+
+                                current_frame_andrea = pygame.transform.flip(andrea.get_current_frame(), True, False)
+                                current_frame_andrea = pygame.transform.scale(current_frame_andrea, (70, 150))
+                                screen.blit(current_frame_andrea, (andrea.x, HEIGHT - current_frame_andrea.get_height() - 67))
+
+                                screen.blit(current_frame_soldier, (mc_x, HEIGHT - current_frame_soldier.get_height() - 65))
+
+                                distance_to_detective = abs(mc_x - (detective.x - 100))
+                                distance_to_andrea = abs(mc_x -(andrea.x))
+
+                                if distance_to_detective < 100:
+                                    rect_for_detective_display = pygame.Rect(20, HEIGHT - 100, WIDTH - 40, 80) 
+                                    button_rect_detective = detective_display.draw(rect_for_detective_display)   
+
+                                    if button_rect_detective:
+                                        detective_display.handle_event(event, rect_for_detective_display)
+                                
+                                elif distance_to_andrea < 130:
+                                    rect_for_andrea_display = pygame.Rect(20, HEIGHT - 100, WIDTH - 40, 80)
+                                    button_rect_andrea = andrea_display.draw(rect_for_andrea_display)
+
+                                    if button_rect_andrea:
+                                        andrea_display.handle_event(event, rect_for_andrea_display)
+
+                                if  mc_x > current_frame_soldier.get_width() + 200:
+                                    floor_5 = True
+                                if floor_5:
+                                    floor_2_background.draw()
+                                    floor5_button.draw()
+
+                                    current_frame_marcus = pygame.transform.scale(marcus.get_current_frame(), (80, 140))
+                                    screen.blit(current_frame_marcus, (marcus.x, HEIGHT - current_frame_marcus.get_height() - 67))
+                                    
+                                    current_frame_barry = pygame.transform.flip(barry.get_current_frame(), True, False)
+                                    current_frame_barry = pygame.transform.scale(current_frame_barry, (70, 150))
+                                    screen.blit(current_frame_barry, (barry.x, HEIGHT - current_frame_barry.get_height() - 67))
+                                    
+                                    screen.blit(current_frame_soldier, (mc_x - 250, HEIGHT - current_frame_soldier.get_height() - 65))
+
+                                    distance_to_marcus = abs(mc_x - (marcus.x + 160))
+                                    distance_to_barry = abs(mc_x -(barry.x + 100))
+
+                                    if distance_to_marcus < 100:
+                                        rect_for_marcus_display = pygame.Rect(20, HEIGHT - 100, WIDTH - 40, 80) 
+                                        button_rect_marcus = marcus_display.draw(rect_for_marcus_display)   
+
+                                        if button_rect_marcus:
+                                            marcus_display.handle_event(event, rect_for_marcus_display)
+                                    
+                                    elif distance_to_barry < 30:
+                                        rect_for_barry_display = pygame.Rect(20, HEIGHT - 100, WIDTH - 40, 80)
+                                        button_rect_barry = barry_display.draw(rect_for_barry_display)
+
+                                        if button_rect_barry:
+                                            barry_display.handle_event(event, rect_for_barry_display)
+
+                                    if floor5_button.check_clicked():
+                                        floor_6 = True
+                                    if floor_6:
+                                        floor_7_background.draw()
+                                        floor6_button.draw()
+
+                                        current_frame_the_one_who_knows = pygame.transform.scale(the_one_who_knows.get_current_frame(), (60, 120))
+                                        screen.blit(current_frame_the_one_who_knows, (the_one_who_knows.x, HEIGHT - current_frame_the_one_who_knows.get_height() - 67))
+
+                                        screen.blit(current_frame_soldier, (mc_x - 250, HEIGHT - current_frame_soldier.get_height() - 65)) 
+
+                                        distance_to_the_one_who_knows = abs(mc_x - (the_one_who_knows.x + 160))
+                                        
+                                        if distance_to_the_one_who_knows < 100:
+                                            rect_for_the_one_who_knows_display = pygame.Rect(20, HEIGHT - 100, WIDTH - 40, 80) 
+                                            button_rect_the_one_who_knows = the_one_who_knows_display.draw(rect_for_the_one_who_knows_display)   
+
+                                            if button_rect_the_one_who_knows:
+                                                the_one_who_knows_display.handle_event(event, rect_for_the_one_who_knows_display)                  
 
             car_animation.update()
             current_frame = car_animation.get_current_frame()
@@ -546,8 +753,8 @@ def draw_new_game(saved_state=None, event=None):
                         game_state['floor_2'] = floor_2
                         game_state['floor_3'] = floor_3
                         game_state['floor_4'] = floor_4
-                        # game_state['floor_5'] = floor_5
-                        # game_state['floor_6'] = floor_6
+                        game_state['floor_5'] = floor_5
+                        game_state['floor_6'] = floor_6
                         # game_state['floor_7'] = floor_7
                         game_state['car_x'] = car_animation.x
                         game_state['mc_x'] = mc_x
@@ -577,4 +784,3 @@ while run:
     pygame.display.flip()
 
 pygame.quit()
-
