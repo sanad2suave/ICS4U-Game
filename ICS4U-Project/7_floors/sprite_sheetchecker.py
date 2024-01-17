@@ -11,7 +11,7 @@ def get_frame_dimensions(spritesheet_path):
     return frame_width, frame_height
 
 # Replace 'your_spritesheet.png' with the actual path to your spritesheet
-spritesheet_path = './ICS4U-Project/Source/Characters/The_one_who_knows.png'
+spritesheet_path = './ICS4U-Project/Source/Characters/Soldier2_dead.png'
 num_frames = 8  # Update with the actual number of frames in your spritesheet
 
 frame_width, frame_height = get_frame_dimensions(spritesheet_path)
