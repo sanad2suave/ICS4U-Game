@@ -248,8 +248,8 @@ def draw_menu():
         print("Credits button clicked! Perform Credits action.")
        
     elif clicked_button == 'New Game':
-        print("New Game button clicked! Perform New Game action.")
         draw_new_game()
+
     elif clicked_button == 'Exit':
         return False
 
@@ -303,10 +303,25 @@ def draw_new_game(saved_state=None, event=None):
     the_one_who_knows = SpriteAnimation('./ICS4U-Project/Source/Characters/The_one_who_knows.png', (24,48), 4, 100)
     the_one_who_knows.x = 25
 
+    # load jason sprite
+    jason_speed = 3
+    jason_idle = SpriteAnimation('./ICS4U-Project/Source/Characters/Jason_idle.png', (128,128), 8, 100)
+    jason_walk = SpriteAnimation('./ICS4U-Project/Source/Characters/Jason_walk.png', (176,128), 11, 100)
+    #jason_run = SpriteAnimation('./ICS4U-Project/Source/Characters/Jason_run.png', (144,128), 9, 100)
+    jason_hurt = SpriteAnimation('./ICS4U-Project/Source/Characters/Jason_hurt.png', (32,128), 2, 100)
+    jason_dead = SpriteAnimation('./ICS4U-Project/Source/Characters/Jason_dead.png', (32,128), 2, 100)
+    jason_attack1 = SpriteAnimation('./ICS4U-Project/Source/Characters/Jason_attack1.png', (96,128), 6, 100)
+    jason_attack2 = SpriteAnimation('./ICS4U-Project/Source/Characters/Jason_attack2.png', (64,128), 4, 100)
+    jason_attack3 = SpriteAnimation('./ICS4U-Project/Source/Characters/Jason_attack3.png', (80,128), 5, 100)
+
+
     # Adjust speed and size for the soldier character
     mc_speed = 3  # Adjust the speed as needed
     mc_animation_walk = SpriteAnimation('./ICS4U-Project/Source/Characters/Soldier2_walk.png', (128, 128), 8, 100)
     mc_animation_idle = SpriteAnimation('./ICS4U-Project/Source/Characters/Soldier2_idle.png', (144, 128), 9, 100)
+    mc_animation_attack = SpriteAnimation('./ICS4U-Project/Source/Characters/Soldier2_attack.png', (64, 128), 4, 100)
+    mc_animation_hurt = SpriteAnimation('./ICS4U-Project/Source/Characters/Soldier2_hurt.png', (48, 128), 3, 100)
+    mc_animation_dead = SpriteAnimation('./ICS4U-Project/Source/Characters/Soldier2_dead.png', (64, 128), 4, 100)
     mc_animation_walk_left_screen = False
     mc_x = 350
     last_movement_direction = "left"
@@ -352,7 +367,7 @@ def draw_new_game(saved_state=None, event=None):
     floor_4 = game_state['floor_4']
     floor_5 = game_state['floor_5']
     floor_6 = game_state['floor_6']
-    # floor_7 = game_state['floor_7']
+    floor_7 = game_state['floor_7']
 
     # Set initial positions for car and mc_animation_walk based on saved state
     car_animation.x = game_state.get('car_x', 20)
@@ -709,7 +724,16 @@ def draw_new_game(saved_state=None, event=None):
                                             button_rect_the_one_who_knows = the_one_who_knows_display.draw(rect_for_the_one_who_knows_display)   
 
                                             if button_rect_the_one_who_knows:
-                                                the_one_who_knows_display.handle_event(event, rect_for_the_one_who_knows_display)                  
+                                                the_one_who_knows_display.handle_event(event, rect_for_the_one_who_knows_display)
+
+                                        if  mc_x > current_frame_soldier.get_width() + 440:
+                                            floor_7 = True
+                                        if floor_7:
+                                            floor_7_background.draw()
+
+                    
+
+                                            screen.blit(current_frame_soldier, (mc_x - 250, HEIGHT - current_frame_soldier.get_height() - 65))                   
 
             car_animation.update()
             current_frame = car_animation.get_current_frame()
@@ -755,14 +779,14 @@ def draw_new_game(saved_state=None, event=None):
                         game_state['floor_4'] = floor_4
                         game_state['floor_5'] = floor_5
                         game_state['floor_6'] = floor_6
-                        # game_state['floor_7'] = floor_7
+                        game_state['floor_7'] = floor_7
                         game_state['car_x'] = car_animation.x
                         game_state['mc_x'] = mc_x
 
                         save_game(game_state)
                         print("Game Saved!")
 
-                    print("Clicked on the background!")
+                    
                 
 
     return True
