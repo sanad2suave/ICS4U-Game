@@ -242,10 +242,10 @@ def draw_menu():
         else:
             print("No saved game found!")
     elif clicked_button == 'Settings':
-        print("Settings button clicked! Perform Settings action.")
+        pass
         
     elif clicked_button == 'Credits':
-        print("Credits button clicked! Perform Credits action.")
+        draw_credits()
        
     elif clicked_button == 'New Game':
         draw_new_game()
@@ -254,6 +254,12 @@ def draw_menu():
         return False
 
     return True
+
+def draw_credits():
+    #screen.blit(menu_background, (0, 0))
+    pygame.draw.rect(screen, 'black', [100, 100, 300, 300])
+    credit = text_font.render('Sanad Mustafa created everything!', True, 'white') # fix it so it doesnt have to hold
+    screen.blit(credit, (120, 150))
 
 
 def draw_new_game(saved_state=None, event=None):
