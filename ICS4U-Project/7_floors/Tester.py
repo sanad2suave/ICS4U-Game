@@ -256,7 +256,6 @@ def draw_menu():
     return True
 
 def draw_credits():
-    #screen.blit(menu_background, (0, 0))
     pygame.draw.rect(screen, 'black', [100, 100, 300, 300])
     credit = text_font.render('Sanad Mustafa created everything!', True, 'white') # fix it so it doesnt have to hold
     screen.blit(credit, (120, 150))
