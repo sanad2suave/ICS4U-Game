@@ -2,6 +2,8 @@ import pygame
 import os
 import random
 
+# this is just for practice for me to get into pygame basics
+
 WIDTH, HEIGHT = 900, 500
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Number Shooter!")
@@ -10,6 +12,7 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 YELLOW = (255, 255, 0)
+GREEN = (0, 255, 0)
 
 BORDER = pygame.Rect(WIDTH // 2 - 5, 0, 10, HEIGHT)
 
