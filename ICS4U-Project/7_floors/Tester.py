@@ -80,6 +80,17 @@ class SpriteAnimation:
     def get_current_frame(self):
         return self.frames[self.current_frame_index]
     
+class Fighter(SpriteAnimation):
+    def __init__(self, x, y, name, max_hp, strength, spritesheet_path, frame_dimensions, num_frames, frame_duration):
+        super().__init__(spritesheet_path, frame_dimensions, num_frames, frame_duration)
+        self.name = name
+        self.max_hp = max_hp
+        self.hp = max_hp
+        self.strength = strength
+        self.alive = True
+        self.rect = self.frames.get_rect()
+        self.rect.center = (x, y)
+    
 class TextDisplay:
     def __init__(self, messages):
         self.messages = messages
@@ -263,7 +274,7 @@ def draw_credits():
 
 def draw_new_game(saved_state=None, event=None):
     scrolling_background = ScrollingBackground('./ICS4U-Project/Source/sprite_background/8.png', WIDTH, HEIGHT)
-    text_bubble = TextBubble("The year is 2007. You are Detective Wayne, and you \nhave been called up to investigate multiple \nmurders in a condo in the city.")
+    text_bubble = TextBubble("The year is 2007. You are lieutenant Todd, and you \nhave been called as your brother has been \nmurdered in a condo in the city.")
 
     # Load sprite sheet for the car animation
     car_animation = SpriteAnimation('./ICS4U-Project/Source/Characters/Ride.png', (256, 256), 8, 100)
@@ -311,7 +322,7 @@ def draw_new_game(saved_state=None, event=None):
     # load jason sprite
     jason_speed = 8
     jason_idle = SpriteAnimation('./ICS4U-Project/Source/Characters/Jason_idle.png', (128,128), 8, 100)
-    #jason_walk = SpriteAnimation('./ICS4U-Project/Source/Characters/Jason_walk.png', (176,128), 11, 100)
+    jason_walk = SpriteAnimation('./ICS4U-Project/Source/Characters/Jason_walk.png', (128,128), 11, 100)
     jason_run = SpriteAnimation('./ICS4U-Project/Source/Characters/Jason_run.png', (144,128), 9, 100)
     jason_hurt = SpriteAnimation('./ICS4U-Project/Source/Characters/Jason_hurt.png', (32,128), 2, 100)
     jason_dead = SpriteAnimation('./ICS4U-Project/Source/Characters/Jason_dead.png', (32,128), 2, 100)
@@ -324,12 +335,13 @@ def draw_new_game(saved_state=None, event=None):
     mc_speed = 3  # Adjust the speed as needed
     mc_animation_walk = SpriteAnimation('./ICS4U-Project/Source/Characters/Soldier2_walk.png', (128, 128), 8, 100)
     mc_animation_idle = SpriteAnimation('./ICS4U-Project/Source/Characters/Soldier2_idle.png', (144, 128), 9, 100)
-    mc_animation_attack = SpriteAnimation('./ICS4U-Project/Source/Characters/Soldier2_attack.png', (64, 128), 4, 100)
+    mc_animation_attack = SpriteAnimation('./ICS4U-Project/Source/Characters/Soldier2_attack.png', (128, 128), 4, 100)
     mc_animation_hurt = SpriteAnimation('./ICS4U-Project/Source/Characters/Soldier2_hurt.png', (48, 128), 3, 100)
     mc_animation_dead = SpriteAnimation('./ICS4U-Project/Source/Characters/Soldier2_dead.png', (64, 128), 4, 100)
     mc_animation_walk_left_screen = False
     mc_x = 350
     last_movement_direction = "left"
+    todd_anim = [mc_animation_attack, mc_animation_dead, mc_animation_idle, mc_animation_walk, mc_animation_hurt]
 
     lobby_background = ImageScreen('./ICS4U-Project/Source/sprite_background/lobby.png', WIDTH, HEIGHT)
     city_background = ImageScreen('./ICS4U-Project/Source/sprite_background/City2_pale.png', WIDTH, HEIGHT)
@@ -516,42 +528,42 @@ def draw_new_game(saved_state=None, event=None):
     button_rect_marcus = None
     the_one_who_knows_display = TextDisplay(['Todd: Are you the one who knows?',
                                              'The one who knows: Hmmmm.. You are a man seeking \nknowledge',
-                                             'Todd: Yes knowledge of where the F@$k my brother is! Stupid thing is a whole wild goose chase.',
+                                             'Todd: Yes knowledge of where the F@$k my brother is! Stupid \nthing is a whole wild goose chase.',
                                              'The one who knows: Patience Todd... Patience',
                                              'Todd: How the hell do you know my name?',
-                                             'The one who knows: I know everything that goes on in this building. I know what happened to your brother as well.',
+                                             'The one who knows: I know everything that goes on in this \nbuilding. I know what happened to your brother as well.',
                                              'Todd: Tell me where he is or Ill paint your beard red.',
-                                             'The one who knows: Ah ah Todd.. Play nice now. I am not threatened by you as you need my knowledge to find your brother.',
+                                             'The one who knows: Ah ah Todd.. Play nice now. I am not \nthreatened by you as you need my knowledge to find your \nbrother.',
                                              'Todd: Youre testing my patience. Speak!',
                                              'The one who knows: What do you wish to know?',
-                                             'Todd: What the hell this place is and why my brothers body is here.',
+                                             'Todd: What the hell this place is and why my brothers body is \nhere.',
                                              'The one who knows: This building is an experiment.',
                                              'Todd: Elaborate.',
                                              'The one who knows: We were all placed here.',
                                              'Todd: By whom?',
-                                             'The one who knows: Thw court of wolves.',
+                                             'The one who knows: The court of wolves.',
                                              'Todd: The hell? Who are they?',
-                                             'The one who knows: They are a secret society that run this city. They were the ones that sent your brother here on a task.',
-                                             'Todd: What did they make him do',
+                                             'The one who knows: They are a secret society that run this \ncity. They were the ones that sent your brother here on a task.',
+                                             'Todd: What did they make him do?',
                                              'The one who knows: Hunt the spirit of the wolf',
-                                             'Todd: What the hell is that.',
-                                             'The one who knows: It is a spirit from an ancient island. It made its way to the city from the bay. It takes a host and controls them overnight',
-                                             'Todd: Yea thats what that stupid guy from the floor 5 said. How did it make its way to the city.',
-                                             'The one who knows: The court of wolves brought it. In order to test their expirements. We are all their guinea pigs. And your brother was working for them.',
+                                             'Todd: What the hell is that?',
+                                             'The one who knows: It is a spirit from an ancient island. It \nmade its way to the city from the bay. It takes a host and \ncontrols them overnight',
+                                             'Todd: Yea thats what that stupid guy from the floor 5 said. How \ndid it make its way to the city.',
+                                             'The one who knows: The court of wolves brought it. In order to \ntest their expirements. We are all their guinea pigs. And your \nbrother was working for them.',
                                              'Todd: What is their goal with this stupid spirit?',
-                                             'The one who knows: They want it to take a host, and see how the wolf monster reacts. I have lost many friends.',
+                                             'The one who knows: They want it to take a host, and see how \nthe wolf monster reacts. I have lost many friends.',
                                              'Todd: How long have they been running this experiment?',
-                                             'The one who knows: 30 years now. The spirit has taken over dozens of us.',
+                                             'The one who knows: 30 years now. The spirit has taken over \ndozens of us.',
                                              'Todd: So theres dozens of those things in here?',
-                                             'The one who knows: No. The spirit can only survive in a host for so long, then it must look for a new host. The previous host dies.',
+                                             'The one who knows: No. The spirit can only survive in a host \nfor so long, then it must look for a new host. The previous host \ndies.',
                                              'Todd: How does this have anything to do with Jason?',
-                                             'The one who knows: Your brother worked for the court of wolves. He was sent to destroy the spirit otherwise it would terrorize the enitre city if it escapes.',
+                                             'The one who knows: Your brother worked for the court of \nwolves. He was sent to destroy the spirit otherwise it would \nterrorize the enitre city if it escapes.',
                                              'Todd: Where is he now? What happened to him?',
                                              'The one who knows: Im sorry.',
                                              'Todd: About what! WHAT HAPPENED!',
                                              'The one who knows: It took him.',
-                                             'Todd: NOO. WHERE IS HE YOU C@NT',
-                                             'The one who knows: He is in the next floor. FLoor 7. Take the stairs, the elavator is busted. Be careful, he bites.'])
+                                             'Todd: NOO. WHERE IS HE YOU CU&T',
+                                             'The one who knows: He is in the next floor. FLoor 7. Take the \nstairs, the elavator is busted. Be careful, he bites.'])
     the_one_who_knows_display.update()
     button_rect_the_one_who_knows = None
     
@@ -581,21 +593,26 @@ def draw_new_game(saved_state=None, event=None):
                         mc_x += speed
                         last_movement_direction = "left" if speed < 0 else "right"
 
-                mc_animation_walk.update()
+                todd_anim[3].update()
 
-                if not any(keys):
-                    #mc_animation_idle.update()
-                    current_frame_soldier = pygame.transform.scale(mc_animation_idle.get_current_frame(), (220, 220))
-
-                    
+                if keys[pygame.K_q]:
+                    todd_anim[0].update()
+                    current_frame_soldier = pygame.transform.scale(todd_anim[0].get_current_frame(), (220, 220))
                     if last_movement_direction == "left":
                         current_frame_soldier = pygame.transform.flip(current_frame_soldier, True, False)
                 else:
-                    current_frame_soldier = pygame.transform.scale(mc_animation_walk.get_current_frame(), (220, 220))
+                    todd_anim[3].update()
 
-                    
-                    if last_movement_direction == "left":
-                        current_frame_soldier = pygame.transform.flip(current_frame_soldier, True, False)
+                    if not any(keys):
+                        current_frame_soldier = pygame.transform.scale(todd_anim[2].get_current_frame(), (220, 220))
+
+                        if last_movement_direction == "left":
+                            current_frame_soldier = pygame.transform.flip(current_frame_soldier, True, False)
+                    else:
+                        current_frame_soldier = pygame.transform.scale(todd_anim[3].get_current_frame(), (220, 220))
+
+                        if last_movement_direction == "left":
+                            current_frame_soldier = pygame.transform.flip(current_frame_soldier, True, False)
 
                 screen.blit(current_frame_soldier, (mc_x, HEIGHT - current_frame_soldier.get_height() - 55))
 
@@ -771,8 +788,12 @@ def draw_new_game(saved_state=None, event=None):
                                             floor_7 = True
                                         if floor_7:
                                             floor_7_background.draw()
-
-                    
+                                            
+                                            jason_anim = [jason_idle, jason_attack1, jason_attack2, jason_attack3, jason_dead, jason_hurt, jason_run]
+                                            
+                                            jason_walk.update()
+                                            current_frame_jason_walk = pygame.transform.scale(jason_walk.get_current_frame(), (200, 240))
+                                            screen.blit(current_frame_jason_walk, (jason_idle.x, HEIGHT - current_frame_jason_walk.get_height() - 70))
 
                                             screen.blit(current_frame_soldier, (mc_x - 250, HEIGHT - current_frame_soldier.get_height() - 65))                   
 
