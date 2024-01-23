@@ -1,6 +1,7 @@
 import pygame
 import os
 import json
+import random
 
 pygame.init()
 
@@ -14,12 +15,19 @@ main_menu = False
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Se7en Floors")
 menu_background = pygame.transform.scale(pygame.image.load('./ICS4U-Project/Source/sprite_background/6.png'), (WIDTH, HEIGHT))
+#fight_bg = pygame.transform.scale(pygame.image.load('./ICS4U-Project/Source/sprite_background/Room.png'), (WIDTH, HEIGHT))
 
 # Define fonts
 font = pygame.font.Font("./ICS4U-Project/Fonts/Bombing.ttf", 30)
 title_font = pygame.font.Font("./ICS4U-Project/Fonts/Bombing.ttf", 50)
 text_font = pygame.font.Font("./ICS4U-Project/Fonts/Bombing.ttf", 26)
 dialogue_font = pygame.font.Font('freesansbold.ttf', 14)
+
+# fight initializations 
+current_fighter = 1
+total_fighters = 2
+action_cooldown = 0
+action_wait_time = 90
 
 class Button:
     def __init__(self, txt, pos):
@@ -80,6 +88,88 @@ class SpriteAnimation:
     def get_current_frame(self):
         return self.frames[self.current_frame_index]
     
+class Fighter():
+    def __init__(self, x, y, name, max_hp, strength):
+        self.name = name
+        self.max_hp = max_hp
+        self.hp = max_hp
+        self.strength = strength
+        self.alive = True
+        self.animation_list = []
+        self.frame_index = 0
+        self.action = 0 # 0: idle, 1:attack, 2:hurt, 3:dead
+        self.update_time = pygame.time.get_ticks()
+        # load idle images
+        temp_list = []
+        for i in range(8):
+            img = pygame.image.load(f'./ICS4U-Project/Source/Characters/{self.name}/Idle/{i}.png')
+            img = pygame.transform.scale(img, (img.get_width() * 1.7, (img.get_height() * 1.7)))
+            temp_list.append(img)
+        self.animation_list.append(temp_list)
+        # load attack images
+        temp_list = []
+        for i in range(4):
+            img = pygame.image.load(f'./ICS4U-Project/Source/Characters/{self.name}/Attack/{i}.png')
+            img = pygame.transform.scale(img, (img.get_width() * 1.7, (img.get_height() * 1.7)))
+            temp_list.append(img)
+        self.animation_list.append(temp_list)
+        self.image = self.animation_list[self.action][self.frame_index]
+        self.rect = self.image.get_rect()
+        self.rect.center = (x, y)
+
+
+    def update(self):
+        animation_cooldown = 100
+        # handle animation
+        # update image
+        self.image = self.animation_list[self.action][self.frame_index]
+        if pygame.time.get_ticks() - self.update_time > animation_cooldown:
+            self.update_time = pygame.time.get_ticks()
+            self.frame_index += 1
+        # if the animation has run out then reset back to the start
+        if self.frame_index >= len(self.animation_list[self.action]):
+            self.idle()
+
+    def idle(self):
+        self.action = 0
+        self.frame_index = 0
+        self.update_time = pygame.time.get_ticks()
+
+
+    def attack(self, target):
+        # deal damage to enemy
+        rand = random.randint(-5, 5)
+        damage = self.strength + rand
+        target.hp -= damage
+        # set variables to attack animation
+        self.action = 1
+        self.frame_index = 0
+        self.update_time = pygame.time.get_ticks()
+
+    def draw(self):
+        screen.blit(self.image, self.rect)
+
+todd = Fighter(120, 330, 'Todd', 30, 10)
+jason = Fighter(350, 330, 'Jason', 15, 6)
+
+class HealthBar():
+    def __init__(self, x, y, hp, max_hp):
+        self.x = x
+        self.y = y
+        self.hp = hp
+        self.max_hp = max_hp
+
+    def draw(self, hp):
+        # update with new health
+        self.hp = hp
+        # calculate health ratio
+        ratio = self.hp / self.max_hp
+        pygame.draw.rect(screen, (255, 0, 0), (self.x, self.y, 150, 20))
+        pygame.draw.rect(screen, (0, 255, 0), (self.x, self.y, 150 * ratio, 20))
+
+todd_health_bar = HealthBar(30, HEIGHT - 350, todd.hp, todd.max_hp)
+jason_health_bar = HealthBar(300, HEIGHT - 350, jason.hp, jason.max_hp)
+
 class TextDisplay:
     def __init__(self, messages):
         self.messages = messages
@@ -242,23 +332,28 @@ def draw_menu():
         else:
             print("No saved game found!")
     elif clicked_button == 'Settings':
-        print("Settings button clicked! Perform Settings action.")
+        pass
         
     elif clicked_button == 'Credits':
-        print("Credits button clicked! Perform Credits action.")
+        draw_credits()
        
     elif clicked_button == 'New Game':
-        print("New Game button clicked! Perform New Game action.")
         draw_new_game()
+
     elif clicked_button == 'Exit':
         return False
 
     return True
 
+def draw_credits():
+    pygame.draw.rect(screen, 'black', [100, 100, 300, 300])
+    credit = text_font.render('Sanad Mustafa created everything!', True, 'white') # fix it so it doesnt have to hold
+    screen.blit(credit, (120, 150))
+
 
 def draw_new_game(saved_state=None, event=None):
     scrolling_background = ScrollingBackground('./ICS4U-Project/Source/sprite_background/8.png', WIDTH, HEIGHT)
-    text_bubble = TextBubble("The year is 2007. You are Detective Wayne, and you \nhave been called up to investigate multiple \nmurders in a condo in the city.")
+    text_bubble = TextBubble("The year is 2007. You are lieutenant Todd, and you \nhave been called as your brother has been \nmurdered in a condo in the city.")
 
     # Load sprite sheet for the car animation
     car_animation = SpriteAnimation('./ICS4U-Project/Source/Characters/Ride.png', (256, 256), 8, 100)
@@ -303,10 +398,25 @@ def draw_new_game(saved_state=None, event=None):
     the_one_who_knows = SpriteAnimation('./ICS4U-Project/Source/Characters/The_one_who_knows.png', (24,48), 4, 100)
     the_one_who_knows.x = 25
 
+    # load jason sprite
+    jason_speed = 8
+    jason_idle = SpriteAnimation('./ICS4U-Project/Source/Characters/Jason_idle.png', (128,128), 8, 100)
+    #jason_walk = SpriteAnimation('./ICS4U-Project/Source/Characters/Jason_walk.png', (176,128), 11, 100)
+    jason_run = SpriteAnimation('./ICS4U-Project/Source/Characters/Jason_run.png', (144,128), 9, 100)
+    jason_hurt = SpriteAnimation('./ICS4U-Project/Source/Characters/Jason_hurt.png', (32,128), 2, 100)
+    jason_dead = SpriteAnimation('./ICS4U-Project/Source/Characters/Jason_dead.png', (32,128), 2, 100)
+    jason_attack1 = SpriteAnimation('./ICS4U-Project/Source/Characters/Jason_attack1.png', (96,128), 6, 100)
+    jason_attack2 = SpriteAnimation('./ICS4U-Project/Source/Characters/Jason_attack2.png', (64,128), 4, 100)
+    jason_attack3 = SpriteAnimation('./ICS4U-Project/Source/Characters/Jason_attack3.png', (80,128), 5, 100)
+
+
     # Adjust speed and size for the soldier character
     mc_speed = 3  # Adjust the speed as needed
     mc_animation_walk = SpriteAnimation('./ICS4U-Project/Source/Characters/Soldier2_walk.png', (128, 128), 8, 100)
     mc_animation_idle = SpriteAnimation('./ICS4U-Project/Source/Characters/Soldier2_idle.png', (144, 128), 9, 100)
+    mc_animation_attack = SpriteAnimation('./ICS4U-Project/Source/Characters/Soldier2_attack.png', (64, 128), 4, 100)
+    mc_animation_hurt = SpriteAnimation('./ICS4U-Project/Source/Characters/Soldier2_hurt.png', (48, 128), 3, 100)
+    mc_animation_dead = SpriteAnimation('./ICS4U-Project/Source/Characters/Soldier2_dead.png', (64, 128), 4, 100)
     mc_animation_walk_left_screen = False
     mc_x = 350
     last_movement_direction = "left"
@@ -352,7 +462,7 @@ def draw_new_game(saved_state=None, event=None):
     floor_4 = game_state['floor_4']
     floor_5 = game_state['floor_5']
     floor_6 = game_state['floor_6']
-    # floor_7 = game_state['floor_7']
+    floor_7 = game_state['floor_7']
 
     # Set initial positions for car and mc_animation_walk based on saved state
     car_animation.x = game_state.get('car_x', 20)
@@ -495,7 +605,43 @@ def draw_new_game(saved_state=None, event=None):
     marcus_display.update()
     button_rect_marcus = None
     the_one_who_knows_display = TextDisplay(['Todd: Are you the one who knows?',
-                                             'The one who knows: Hmmmm.. You are a man seeking \nknowledge'])
+                                             'The one who knows: Hmmmm.. You are a man seeking \nknowledge',
+                                             'Todd: Yes knowledge of where the F@$k my brother is! Stupid \nthing is a whole wild goose chase.',
+                                             'The one who knows: Patience Todd... Patience',
+                                             'Todd: How the hell do you know my name?',
+                                             'The one who knows: I know everything that goes on in this \nbuilding. I know what happened to your brother as well.',
+                                             'Todd: Tell me where he is or Ill paint your beard red.',
+                                             'The one who knows: Ah ah Todd.. Play nice now. I am not \nthreatened by you as you need my knowledge to find your \nbrother.',
+                                             'Todd: Youre testing my patience. Speak!',
+                                             'The one who knows: What do you wish to know?',
+                                             'Todd: What the hell this place is and why my brothers body is \nhere.',
+                                             'The one who knows: This building is an experiment.',
+                                             'Todd: Elaborate.',
+                                             'The one who knows: We were all placed here.',
+                                             'Todd: By whom?',
+                                             'The one who knows: The court of wolves.',
+                                             'Todd: The hell? Who are they?',
+                                             'The one who knows: They are a secret society that run this \ncity. They were the ones that sent your brother here on a task.',
+                                             'Todd: What did they make him do?',
+                                             'The one who knows: Hunt the spirit of the wolf',
+                                             'Todd: What the hell is that?',
+                                             'The one who knows: It is a spirit from an ancient island. It \nmade its way to the city from the bay. It takes a host and \ncontrols them overnight',
+                                             'Todd: Yea thats what that stupid guy from the floor 5 said. How \ndid it make its way to the city.',
+                                             'The one who knows: The court of wolves brought it. In order to \ntest their expirements. We are all their guinea pigs. And your \nbrother was working for them.',
+                                             'Todd: What is their goal with this stupid spirit?',
+                                             'The one who knows: They want it to take a host, and see how \nthe wolf monster reacts. I have lost many friends.',
+                                             'Todd: How long have they been running this experiment?',
+                                             'The one who knows: 30 years now. The spirit has taken over \ndozens of us.',
+                                             'Todd: So theres dozens of those things in here?',
+                                             'The one who knows: No. The spirit can only survive in a host \nfor so long, then it must look for a new host. The previous host \ndies.',
+                                             'Todd: How does this have anything to do with Jason?',
+                                             'The one who knows: Your brother worked for the court of \nwolves. He was sent to destroy the spirit otherwise it would \nterrorize the enitre city if it escapes.',
+                                             'Todd: Where is he now? What happened to him?',
+                                             'The one who knows: Im sorry.',
+                                             'Todd: About what! WHAT HAPPENED!',
+                                             'The one who knows: It took him.',
+                                             'Todd: NOO. WHERE IS HE YOU CU&T',
+                                             'The one who knows: He is in the next floor. FLoor 7. Take the \nstairs, the elavator is busted. Be careful, he bites.'])
     the_one_who_knows_display.update()
     button_rect_the_one_who_knows = None
     
@@ -709,7 +855,53 @@ def draw_new_game(saved_state=None, event=None):
                                             button_rect_the_one_who_knows = the_one_who_knows_display.draw(rect_for_the_one_who_knows_display)   
 
                                             if button_rect_the_one_who_knows:
-                                                the_one_who_knows_display.handle_event(event, rect_for_the_one_who_knows_display)                  
+                                                the_one_who_knows_display.handle_event(event, rect_for_the_one_who_knows_display)
+
+                                        if  mc_x > current_frame_soldier.get_width() + 440:
+                                            floor_7 = True
+                                        if floor_7:
+                                            floor_7_background.draw()
+
+                                            
+                                            current_fighter = 1
+                                            total_fighters = 2
+                                            action_cooldown = 0
+                                            action_wait_time = 90
+
+                                            todd.update()
+                                            todd.draw()
+
+                                            jason.update()
+                                            jason.draw()
+
+                                            todd_health_bar.draw(todd.hp)
+                                            jason_health_bar.draw(jason.hp)
+
+                                        
+
+                                            #player action
+                                            if todd.alive == True:
+                                                if current_fighter == 1:
+                                                    action_cooldown += 1
+                                                    if action_cooldown >= action_wait_time:
+                                                        #look for player action
+                                                        #attack
+                                                        todd.attack(jason)
+                                                        current_fighter += 1
+                                                        action_cooldown = 0
+
+                                                # enemy action
+                                            if current_fighter == 2:
+                                                if jason.alive == True:
+                                                    action_cooldown += 1
+                                                    if action_cooldown >= action_wait_time:
+                                                        jason.attack(todd)
+                                                        current_fighter += 1
+                                                        action_cooldown = 0
+                                                
+                                            if current_fighter > total_fighters:
+                                                current_fighter = 1
+                  
 
             car_animation.update()
             current_frame = car_animation.get_current_frame()
@@ -755,14 +947,14 @@ def draw_new_game(saved_state=None, event=None):
                         game_state['floor_4'] = floor_4
                         game_state['floor_5'] = floor_5
                         game_state['floor_6'] = floor_6
-                        # game_state['floor_7'] = floor_7
+                        game_state['floor_7'] = floor_7
                         game_state['car_x'] = car_animation.x
                         game_state['mc_x'] = mc_x
 
                         save_game(game_state)
                         print("Game Saved!")
 
-                    print("Clicked on the background!")
+                    
                 
 
     return True
@@ -784,3 +976,4 @@ while run:
     pygame.display.flip()
 
 pygame.quit()
+
